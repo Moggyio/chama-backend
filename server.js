@@ -14,7 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Base route
+// Health check
 app.get("/", (req, res) => {
   res.send("Chama backend is running");
 });
@@ -25,21 +25,19 @@ app.get("/db-test", async (req, res) => {
     const result = await pool.query("SELECT NOW()");
     res.json(result.rows[0]);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Auth routes
+// Routes
 app.use("/api/auth", authRoutes);
-
-// Member contribution routes
 app.use("/api/contributions", contributionRoutes);
-
-// Admin routes
 app.use("/api/admin", adminRoutes);
 
-// Start server
-const PORT = 5000;
+// 🔴 IMPORTANT FIX: use Railway's port
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+  console.log(`Backend running on port ${PORT}`);
 });
