@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 
-// ❌ DO NOT load dotenv at all on Railway
-if (process.env.RAILWAY_ENVIRONMENT === "development") {
+// Only load dotenv locally
+if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
@@ -37,5 +37,5 @@ app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log("Backend running on port", PORT);
+  console.log(`Backend running on port ${PORT}`);
 });
