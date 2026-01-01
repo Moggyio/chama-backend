@@ -5,9 +5,7 @@ const pool = require("../config/db");
 
 const router = express.Router();
 
-/**
- * REGISTER
- */
+// REGISTER
 router.post("/register", async (req, res) => {
   const { full_name, email, phone, password } = req.body;
 
@@ -16,7 +14,6 @@ router.post("/register", async (req, res) => {
   }
 
   try {
-    // Check if email exists
     const existingUser = await pool.query(
       "SELECT id FROM users WHERE email = $1",
       [email]
@@ -41,30 +38,24 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/**
- * LOGIN
- */
+// LOGIN
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userResult = await pool.query(
+    const result = await pool.query(
       "SELECT * FROM users WHERE email = $1",
       [email]
     );
 
-    if (userResult.rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const user = userResult.rows[0];
+    const user = result.rows[0];
+    const match = await bcrypt.compare(password, user.password_hash);
 
-    const passwordMatch = await bcrypt.compare(
-      password,
-      user.password_hash
-    );
-
-    if (!passwordMatch) {
+    if (!match) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
@@ -74,10 +65,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({
-      token,
-      role: user.role,
-    });
+    res.json({ token, role: user.role });
   } catch (err) {
     console.error("LOGIN ERROR:", err);
     res.status(500).json({ message: "Server error during login" });
